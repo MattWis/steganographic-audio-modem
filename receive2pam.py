@@ -4,6 +4,7 @@ import sys
 import struct
 import numpy as np
 import matplotlib.pyplot as plt
+import wave
 
 DATA_RATE = 44.1
 PLAY_RATE = 44100.0
@@ -58,17 +59,18 @@ def decode(received):
 # plt.plot(pulse())
 # plt.show()
 
-p = pyaudio.PyAudio()
-RATE = 44100
+# p = pyaudio.PyAudio()
+# RATE = 44100
 
-stream = p.open(format = pyaudio.paInt16,
-                channels = 1,
-                rate = RATE,
-                input = True,
-                output = True,
-                frames_per_buffer = 1024)
+# stream = p.open(format = pyaudio.paInt16,
+                # channels = 1,
+                # rate = RATE,
+                # input = True,
+                # output = True,
+                # frames_per_buffer = 1024)
 
-data = stream.read(88200)
+# data = stream.read(88200)
+data = wave.open("output.wav", 'r').readframes(88200)
 
 # # Convert sound card data to numpy array
 fmt = "%dH" % (len(data)/2)
@@ -83,7 +85,7 @@ plt.show()
 # data = struct.pack(fmt, *list(legit_noise()))
 # stream.write(data)
 
-stream.stop_stream()
-stream.close()
+# stream.stop_stream()
+# stream.close()
 
-p.terminate()
+# p.terminate()
