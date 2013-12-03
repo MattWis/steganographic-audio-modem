@@ -10,7 +10,7 @@ PLAY_RATE = 44100.0
 
 def legit_noise():
     np.random.seed(0)
-    return np.random.randn(44100)
+    return (np.random.randn(44100) * 10000 + 2**15).astype(np.uint16)
 
 def sinc():
     # Define sinc function
@@ -46,40 +46,40 @@ def decode(received):
     # plt.plot(zero_centered)
     # plt.show()
 
-impulse = np.correlate(legit_noise(), legit_noise(), "full")
+# impulse = np.correlate(legit_noise(), legit_noise(), "full")
 # plt.plot(impulse)
 # plt.show()
 
-data = np.sign(np.random.randn(100))
-received = encode(data)
-decode(received)
+# data = np.sign(np.random.randn(100))
+# received = encode(data)
+# decode(received)
 
 # plt.plot(received)
 # plt.plot(pulse())
 # plt.show()
 
-# p = pyaudio.PyAudio()
-# RATE = 44100
+p = pyaudio.PyAudio()
+RATE = 44100
 
-# stream = p.open(format = p.paInt16,
-                # channels = 1,
-                # rate = RATE,
-                # input = True,
-                # output = True,
-                # frames_per_buffer = 1024)
+stream = p.open(format = pyaudio.paInt16,
+                channels = 1,
+                rate = RATE,
+                input = True,
+                output = True,
+                frames_per_buffer = 1024)
 
 # data = stream.read(44100)
 
 # # Convert sound card data to numpy array
-# fmt = "%dH" % (len(sinc()))
+fmt = "%dH" % (len(legit_noise()))
 # data2 = struct.unpack(fmt, data)
 # np_data = np.array(data2, dtype='u2')
 
 # # Play back recorded sound
-# data = struct.pack(fmt, *list(sinc()))
-# stream.write(data)
+data = struct.pack(fmt, *list(legit_noise()))
+stream.write(data)
 
-# stream.stop_stream()
-# stream.close()
+stream.stop_stream()
+stream.close()
 
-# p.terminate()
+p.terminate()
