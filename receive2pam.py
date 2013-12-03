@@ -10,7 +10,7 @@ PLAY_RATE = 44100.0
 
 def legit_noise():
     np.random.seed(0)
-    return (np.random.randn(44100) * 10000 + 2**15).astype(np.uint16)
+    return np.random.randn(44100)
 
 def sinc():
     # Define sinc function
@@ -68,16 +68,20 @@ stream = p.open(format = pyaudio.paInt16,
                 output = True,
                 frames_per_buffer = 1024)
 
-# data = stream.read(44100)
+data = stream.read(88200)
 
 # # Convert sound card data to numpy array
-fmt = "%dH" % (len(legit_noise()))
-# data2 = struct.unpack(fmt, data)
-# np_data = np.array(data2, dtype='u2')
+fmt = "%dH" % (len(data)/2)
+data2 = struct.unpack(fmt, data)
+np_data = np.array(data2, dtype='u2')
+
+correlated = np.correlate(np_data.astype(np.float64), legit_noise(), "full")
+plt.plot((correlated))
+plt.show()
 
 # # Play back recorded sound
-data = struct.pack(fmt, *list(legit_noise()))
-stream.write(data)
+# data = struct.pack(fmt, *list(legit_noise()))
+# stream.write(data)
 
 stream.stop_stream()
 stream.close()
