@@ -33,9 +33,12 @@ def decode(received):
     # plt.plot(zero_centered)
     # plt.show()
 
-# impulse = np.correlate(legit_noise(), legit_noise(), "full")
-# plt.plot(impulse)
-# plt.show()
+def maxIndex(list):
+    maximum = max(list)
+    for idx, val in enumerate(list):
+        if val == maximum:
+            return (idx, val)
+    return (-1, maximum)
 
 # data = np.sign(np.random.randn(100))
 # decode(received)
@@ -59,13 +62,18 @@ data2 = struct.unpack(fmt, data)
 np_data = np.array(data2, dtype='u2')
 
 correlated = np.correlate(np_data.astype(np.float64), legit_noise(), "full")
-plt.plot((correlated))
+(maxIdx, maxVal) = maxIndex(abs(correlated))
+print maxIdx, maxVal
+impulse = correlated[maxIdx:]
+
+channel = np.fft.fft(impulse)
+freq = np.fft.fftfreq(impulse.shape[-1])
+plt.plot(freq, channel.real, 'k')
+plt.plot(freq, channel.imag, 'b')
 plt.show()
 
-# # Play back recorded sound
-# data = struct.pack(fmt, *list(legit_noise()))
-# stream.write(data)
 
+# # Close pyAudio
 # stream.stop_stream()
 # stream.close()
 
