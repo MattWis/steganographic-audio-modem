@@ -35,28 +35,6 @@ def encode(bits):
     unsigned_wave = (wave + 2**15).astype(np.uint16)
     return unsigned_wave
 
-def normalize(signal):
-    return signal / max(signal)
-
-def decode(received):
-    zero_centered = received.astype(np.float64) - 2**15
-    normalized = normalize(zero_centered)
-
-    # plt.plot(np.convolve(normalized, sinc()))
-    # plt.plot(zero_centered)
-    # plt.show()
-
-# impulse = np.correlate(legit_noise(), legit_noise(), "full")
-# plt.plot(impulse)
-# plt.show()
-
-# data = np.sign(np.random.randn(100))
-# received = encode(data)
-# decode(received)
-
-# plt.plot(received)
-# plt.plot(pulse())
-# plt.show()
 
 p = pyaudio.PyAudio()
 RATE = 44100
@@ -68,14 +46,9 @@ stream = p.open(format = pyaudio.paInt16,
                 output = True,
                 frames_per_buffer = 1024)
 
-# data = stream.read(44100)
 
-# # Convert sound card data to numpy array
+# Play encoded sound
 fmt = "%dH" % (len(legit_noise()))
-# data2 = struct.unpack(fmt, data)
-# np_data = np.array(data2, dtype='u2')
-
-# # Play back recorded sound
 data = struct.pack(fmt, *list(legit_noise()))
 stream.write(data)
 
