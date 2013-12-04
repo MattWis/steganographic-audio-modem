@@ -22,20 +22,6 @@ def sinc():
 def pulse():
     return (sinc() * (2**13)).astype(np.int16)
 
-def encode(bits):
-
-    gap = int(PLAY_RATE / DATA_RATE)
-    wave = np.zeros(gap * len(bits) + len(pulse()), np.int16)
-
-    for i, bit in enumerate(bits):
-        deadtime = np.zeros(gap * i, np.int16)
-        convolved = np.append(deadtime, pulse() * bit)
-        convolved.resize(len(wave))
-        wave += convolved
-        
-    unsigned_wave = (wave + 2**15).astype(np.uint16)
-    return unsigned_wave
-
 def normalize(signal):
     return signal / max(signal)
 
@@ -52,12 +38,7 @@ def decode(received):
 # plt.show()
 
 # data = np.sign(np.random.randn(100))
-# received = encode(data)
 # decode(received)
-
-# plt.plot(received)
-# plt.plot(pulse())
-# plt.show()
 
 # p = pyaudio.PyAudio()
 # RATE = 44100
