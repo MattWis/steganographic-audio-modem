@@ -14,17 +14,25 @@ def legit_noise():
 
 def sinc():
     # Define sinc function
-    width = 200.0
+    width = DATA_RATE
     x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
     return np.sinc(x)
 
 def pulse():
-    return (sinc() * (2**13)).astype(np.int16)
+    return (sinc() * 2**10).astype(np.int16)
+
+def createRandomData():
+    np.random.seed(0)
+    data = np.sign(np.random.randn(100))
+    #return data.astype(np.uint16)
+    return encode(data)
 
 def encode(bits):
 
     gap = int(PLAY_RATE / DATA_RATE)
     wave = np.zeros(gap * len(bits) + len(pulse()), np.int16)
+    x = np.linspace(1,len(wave),1)
+    cos = np.cos(x*2*math.pi)
 
     for i, bit in enumerate(bits):
         deadtime = np.zeros(gap * i, np.int16)
@@ -32,7 +40,7 @@ def encode(bits):
         convolved.resize(len(wave))
         wave += convolved
         
-    unsigned_wave = (wave + 2**15).astype(np.uint16)
+    unsigned_wave = ((wave + 2**15)*cos).astype(np.uint16)
     return unsigned_wave
 
 
@@ -46,11 +54,26 @@ stream = p.open(format = pyaudio.paInt16,
                 output = True,
                 frames_per_buffer = 1024)
 
+# Play white noise + data
+#randData = createRandomData()
+#legitNoise = legit_noise()
+#package =  np.append(legitNoise,randData)
 
-# Play encoded sound
-fmt = "%dH" % (len(legit_noise()))
-data = struct.pack(fmt, *list(legit_noise()))
+# Play data
+package = createRandomData()
+x = np.linspace(1,44100/10, 44100)
+cos = (np.cos(x) * 2**10 + 2**15)
+print cos
+#plt.plot(x/PLAY_RATE,cos)
+#plt.show()
+fmt = "%dH" % (len(cos))
+data = struct.pack(fmt, *list(cos))
 stream.write(data)
+#fmt = "%dH" % (len(package))
+#data = struct.pack(fmt, *list(package))
+#stream.write(data)
+
+
 
 stream.stop_stream()
 stream.close()
