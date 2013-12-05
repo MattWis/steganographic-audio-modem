@@ -5,13 +5,14 @@ import struct
 import numpy as np
 import matplotlib.pyplot as plt
 import wave
+import pickle
 
 DATA_RATE = 44.1
 PLAY_RATE = 44100.0
 
 def legit_noise():
     np.random.seed(0)
-    return np.random.randn(44100)
+    return np.random.randn(44100*15)
 
 def sinc():
     # Define sinc function
@@ -54,22 +55,30 @@ def maxIndex(list):
                 # frames_per_buffer = 1024)
 
 # data = stream.read(88200)
-data = wave.open("output.wav", 'r').readframes(88200)
+data = wave.open("output.wav", 'r').readframes(44100 * 2)
 
 # # Convert sound card data to numpy array
-fmt = "%dH" % (len(data)/2)
+fmt = "%dh" % (len(data)/2)
 data2 = struct.unpack(fmt, data)
-np_data = np.array(data2, dtype='u2')
+np_data = np.array(data2, dtype='int16')
+
+# plt.plot(np_data)
+# for point in np_data:
+    # print point
+
 
 correlated = np.correlate(np_data.astype(np.float64), legit_noise(), "full")
+pickle.dump(correlated, 'correlated.txt')
+
 (maxIdx, maxVal) = maxIndex(abs(correlated))
 print maxIdx, maxVal
 impulse = correlated[maxIdx:]
+plt.plot(correlated)
 
-channel = np.fft.fft(impulse)
-freq = np.fft.fftfreq(impulse.shape[-1])
-plt.plot(freq, channel.real, 'k')
-plt.plot(freq, channel.imag, 'b')
+# channel = np.fft.fft(impulse)
+# freq = np.fft.fftfreq(impulse.shape[-1])
+# plt.plot(freq, np.sqrt(channel.real**2 + channel.imag**2), 'k')
+# plt.plot(freq, channel.imag, 'b')
 plt.show()
 
 
