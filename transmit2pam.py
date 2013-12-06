@@ -31,8 +31,11 @@ def encode(bits):
 
     gap = int(PLAY_RATE / DATA_RATE)
     wave = np.zeros(gap * len(bits) + len(pulse()), np.int16)
-    x = np.linspace(1,len(wave),1)
-    cos = np.cos(x*2*math.pi)
+    x = np.linspace(1,len(wave)/100,len(wave))
+    print len(wave)
+    cos = np.cos(x*2*math.pi*4)* 2**10 + 2**15
+    #return cos
+
 
     for i, bit in enumerate(bits):
         deadtime = np.zeros(gap * i, np.int16)
@@ -54,24 +57,35 @@ stream = p.open(format = pyaudio.paInt16,
                 output = True,
                 frames_per_buffer = 1024)
 
-# Play white noise + data
-#randData = createRandomData()
-#legitNoise = legit_noise()
+# Package white noise + data
+randData = createRandomData()
+legitNoise = legit_noise()
 #package =  np.append(legitNoise,randData)
 
-# Play data
-package = createRandomData()
+# Package just white noise
+#package = legitNoise
+
+# Package just data
+package = randData
+
+
 x = np.linspace(1,44100/10, 44100)
 cos = (np.cos(x) * 2**10 + 2**15)
 print cos
-#plt.plot(x/PLAY_RATE,cos)
-#plt.show()
-fmt = "%dH" % (len(cos))
-data = struct.pack(fmt, *list(cos))
-stream.write(data)
-#fmt = "%dH" % (len(package))
-#data = struct.pack(fmt, *list(package))
+
+x1 = np.linspace(1,len(randData))
+
+plt.plot(randData)
+
+# Play on speaker
+#fmt = "%dH" % (len(cos))
+#data = struct.pack(fmt, *list(cos))
 #stream.write(data)
+
+
+fmt = "%dH" % (len(package))
+data = struct.pack(fmt, *list(package))
+stream.write(data)
 
 
 
