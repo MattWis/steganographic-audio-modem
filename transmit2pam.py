@@ -10,7 +10,7 @@ PLAY_RATE = 44100.0
 
 def legit_noise():
     np.random.seed(0)
-    return (np.random.randn(44100) * 10000 + 2**15).astype(np.uint16)
+    return (np.random.randn(44100*5) * 10000 + 2**15).astype(np.uint16)
 
 def sinc():
     # Define sinc function
@@ -31,11 +31,9 @@ def encode(bits):
 
     gap = int(PLAY_RATE / DATA_RATE)
     wave = np.zeros(gap * len(bits) + len(pulse()), np.int16)
-    x = np.linspace(1,len(wave)/100,len(wave))
+    x = np.linspace(1,len(wave)/10000,len(wave))
     print len(wave)
-    cos = np.cos(x*2*math.pi*4)* 2**10 + 2**15
-    #return cos
-
+    cos = np.cos(x*2*math.pi*400)
 
     for i, bit in enumerate(bits):
         deadtime = np.zeros(gap * i, np.int16)
@@ -43,7 +41,7 @@ def encode(bits):
         convolved.resize(len(wave))
         wave += convolved
         
-    unsigned_wave = ((wave + 2**15)*cos).astype(np.uint16)
+    unsigned_wave = (((wave + 2**15)*cos)*2**10).astype(np.uint16)
     return unsigned_wave
 
 
@@ -60,22 +58,22 @@ stream = p.open(format = pyaudio.paInt16,
 # Package white noise + data
 randData = createRandomData()
 legitNoise = legit_noise()
-#package =  np.append(legitNoise,randData)
+package =  np.append(legitNoise,randData)
 
 # Package just white noise
 #package = legitNoise
 
 # Package just data
-package = randData
+#package = randData
 
 
 x = np.linspace(1,44100/10, 44100)
 cos = (np.cos(x) * 2**10 + 2**15)
 print cos
 
-x1 = np.linspace(1,len(randData))
+#x1 = np.linspace(0,len(randData))
 
-#plt.plot(x1randData)
+#plt.plot(x1,randData)
 
 # Play on speaker
 #fmt = "%dH" % (len(cos))
