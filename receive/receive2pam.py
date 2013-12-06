@@ -25,16 +25,21 @@ def sinc():
     x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
     return np.sinc(x)
 
-def pulse():
-    return (sinc() * (2**13)).astype(np.int16)
+def receive_filter():
+    return sinc()
 
 def normalize(signal):
     return signal / max(signal)
 
 def decode(received):
     zero_centered = received.astype(np.float64) - 2**15
-    # de_modulated = 
-    normalized = normalize(zero_centered)
+    x = np.linspace(1, len(received) / 100, len(received))
+    cos = np.cos(x * 2 * math.pi * 4)
+    demodulated = received * cos
+    normalized = normalize(demodulated)
+    filtered = np.convolve(normalized, receive_filter())
+
+    return filtered
 
     # plt.plot(np.convolve(normalized, sinc()))
     # plt.plot(zero_centered)
