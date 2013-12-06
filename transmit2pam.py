@@ -75,7 +75,7 @@ print cos
 
 x1 = np.linspace(1,len(randData))
 
-plt.plot(randData)
+#plt.plot(x1randData)
 
 # Play on speaker
 #fmt = "%dH" % (len(cos))
