@@ -9,9 +9,9 @@ import pickle
 import os
 import math
 
-DATA_RATE = 44.1
+DATA_RATE = 200.0
 PLAY_RATE = 44100.0
-gap = int(PLAY_RATE / DATA_RATE) + 1
+gap = int(PLAY_RATE / DATA_RATE)
 
 def legit_noise():
     np.random.seed(0)
@@ -49,7 +49,8 @@ def decode(received):
     sampled = np.zeros(len(filtered) / gap)
     for i, zero in enumerate(sampled):
         sampled[i] = filtered[i * gap]
-    return np.sign(sampled[44:-44])
+    plt.plot(sampled)
+    return np.sign(sampled[DATA_RATE:]) * -1
 
 def maxIndex(list):
     maximum = max(list)
@@ -112,17 +113,19 @@ def get_next_data_from_wav(wav_file, num_seconds):
     data2 = struct.unpack(fmt, raw_data)
     return np.array(data2, dtype='int16')
 
-# sound_file = wave.open("output.wav", 'r')
-# np_data = get_next_data_from_wav(sound_file, 10)
+sound_file = wave.open("output.wav", 'r')
+np_data = get_next_data_from_wav(sound_file, 10)
 
 # dump_file = open('correlated1.txt', 'r')
 # channel = pickle.load(dump_file)
 
-dump_file = open('perfectChannelSendData.txt', 'r')
-np_data = pickle.load(dump_file)
+# dump_file = open('perfectChannelSendData.txt', 'r')
+# np_data = pickle.load(dump_file)
 
-noise_band = np_data[0:44100*3]
+noise_band = np_data[:44100*4]
 channel = np.correlate(noise_band, legit_noise, "full")
+# plt.plot(channel)
+# plt.show()
 
 (maxIdx, maxVal) = maxIndex(abs(channel))
 delay = maxIdx + 1 - len(legit_noise)
@@ -130,8 +133,19 @@ print maxIdx, maxVal, delay
 
 encoded_signal = np_data[delay + len(legit_noise):]
 data = decode(encoded_signal)
-print data - randomData()
 plt.plot(data)
+print data[0:100] - randomData()
+print data[1:101] - randomData()
+print data[2:102] - randomData()
+print data[3:103] - randomData()
+
+# for i in range(10):
+    # check_data = data[i:100 + i]
+    # diff = check_data - randomData()
+    # fo
+
+print randomData()
+
 
 # impulse = channel[maxIdx:]
 # plt.plot(correlated)
