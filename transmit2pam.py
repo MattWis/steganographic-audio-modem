@@ -11,7 +11,7 @@ PLAY_RATE = 44100.0
 
 def legit_noise():
     np.random.seed(0)
-    return (np.random.randn(44100*2) * 10000 + 2**15).astype(np.uint16)
+    return np.random.randn(44100*2) * 5000
 
 def sinc():
     # Define sinc function
@@ -20,32 +20,29 @@ def sinc():
     return np.sinc(x)
 
 def pulse():
-    return (sinc() * 2**10).astype(np.int16)
+    return sinc()
 
 def createRandomData():
     np.random.seed(0)
-    print np.random.randn(3)
     data = np.sign(np.random.randn(100))
-    #print data
     return encode(data)
 
 def encode(bits):
 
     gap = int(PLAY_RATE / DATA_RATE)
-    wave = np.zeros(gap * len(bits) + len(pulse()), np.int16)
+    wave = np.zeros(gap * len(bits) + len(pulse()))
     x = np.linspace(1/10000.0,len(wave)/10000.0,len(wave))
-    print len(wave)
 
-    cos = np.cos(x*2*math.pi*400) * .01
+    cos = np.cos(x*2*math.pi*400)
 
     for i, bit in enumerate(bits):
-        deadtime = np.zeros(gap * i, np.int16)
+        deadtime = np.zeros(gap * i)
         convolved = np.append(deadtime, pulse() * bit)
         convolved.resize(len(wave))
-        wave += convolved
+        wave += convolved   
         
-    unsigned_wave = ((((wave + 2**15)*cos))+400)*3
-    return unsigned_wave.astype(np.uint16)
+    unsigned_wave = (wave*cos)*10000
+    return unsigned_wave.astype(np.int16)
     #.astye(np.uint16)
 
 
@@ -70,20 +67,19 @@ package =  np.append(legitNoise,randData)
 # Package just data
 #package = randData
 
-x = np.linspace(1,44100/10, 44100)
-cos = (np.cos(x) * 2**10 + 2**15)
-print cos
-
 # Plot data
-#x1 = np.linspace(1,len(randData), len(randData)) 
-#plt.plot(x1,randData)
-#plt.show()
+x1 = np.linspace(1,len(package), len(package)) 
+plt.plot(x1,package)
+plt.show()
 
+# Save to pickle
 dump_file = open('perfectChannelSendData.txt', 'w')
 pickle.dump(package, dump_file)
 
 # Play data
-fmt = "%dH" % (len(package))
+fmt = "%dh" % (len(package))
+print max(package)
+print min(package)
 data = struct.pack(fmt, *list(package))
 stream.write(data)
 
