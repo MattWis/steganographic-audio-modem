@@ -15,7 +15,7 @@ gap = int(PLAY_RATE / DATA_RATE) + 1
 
 def legit_noise():
     np.random.seed(0)
-    return np.random.randn(44100*15)
+    return np.random.randn(44100 * 2)
 
 # only calculate once to preserve known-ness
 legit_noise = legit_noise()
@@ -33,7 +33,7 @@ def normalize(signal):
     return signal * (1.0 / max(signal))
 
 def cos(length):
-    x = np.linspace(1, length / 100, length)
+    x = np.linspace(1 / 10000.0, length / 10000.0, length)
     return np.cos(x * 2 * math.pi * 4)
 
 def decode(received):
@@ -43,13 +43,9 @@ def decode(received):
     filtered = np.convolve(normalized, receive_filter())
 
     sampled = np.zeros(len(filtered) / gap)
-    for i, zero in enumerate(bits):
+    for i, zero in enumerate(sampled):
         sampled[i] = filtered[i * gap]
-    return sampled
-
-    # plt.plot(np.convolve(normalized, sinc()))
-    # plt.plot(zero_centered)
-    # plt.show()
+    return filtered
 
 def maxIndex(list):
     maximum = max(list)
@@ -113,20 +109,26 @@ def get_next_data_from_wav(wav_file, num_seconds):
     data2 = struct.unpack(fmt, raw_data)
     return np.array(data2, dtype='int16')
 
-sound_file = wave.open("output.wav", 'r')
-np_data = get_next_data_from_wav(sound_file, 10)
+# sound_file = wave.open("output.wav", 'r')
+# np_data = get_next_data_from_wav(sound_file, 10)
 
-dump_file = open('correlated1.txt', 'r')
-correlated = pickle.load(dump_file)
+# dump_file = open('correlated1.txt', 'r')
+# channel = pickle.load(dump_file)
 
-(maxIdx, maxVal) = maxIndex(abs(correlated))
-delay = maxIdx - len(legit_noise)
+dump_file = open('perfectChannelSendData.txt', 'r')
+np_data = pickle.load(dump_file)
+
+noise_band = np_data[0:44100*3]
+channel = np.correlate(noise_band, legit_noise, "full")
+
+(maxIdx, maxVal) = maxIndex(abs(channel))
+delay = maxIdx + 1 - len(legit_noise)
 print maxIdx, maxVal, delay
 
-encoded_signal = np_data[delay + gap * len(legit_noise):]
-print encoded_signal
+encoded_signal = np_data[delay + len(legit_noise):]
+plt.plot(decode(encoded_signal))
 
-# impulse = correlated[maxIdx:]
+# impulse = channel[maxIdx:]
 # plt.plot(correlated)
 # plt.show()
 
@@ -134,4 +136,4 @@ print encoded_signal
 # smooth_channel = smooth(channel, 500)
 # freq = np.fft.fftfreq(impulse.shape[-1])
 # plt.plot(smooth(freq * 44100, 500), smooth(np.sqrt(channel.real**2 + channel.imag**2), 500), 'k')
-# plt.show()
+plt.show()
