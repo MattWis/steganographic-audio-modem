@@ -11,6 +11,7 @@ import math
 
 DATA_RATE = 44.1
 PLAY_RATE = 44100.0
+gap = int(PLAY_RATE / DATA_RATE) + 1
 
 def legit_noise():
     np.random.seed(0)
@@ -29,17 +30,22 @@ def receive_filter():
     return sinc()
 
 def normalize(signal):
-    return signal / max(signal)
+    return signal * (1.0 / max(signal))
+
+def cos(length):
+    x = np.linspace(1, length / 100, length)
+    return np.cos(x * 2 * math.pi * 4)
 
 def decode(received):
     zero_centered = received.astype(np.float64) - 2**15
-    x = np.linspace(1, len(received) / 100, len(received))
-    cos = np.cos(x * 2 * math.pi * 4)
-    demodulated = received * cos
+    demodulated = received * cos(len(received))
     normalized = normalize(demodulated)
     filtered = np.convolve(normalized, receive_filter())
 
-    return filtered
+    sampled = np.zeros(len(filtered) / gap)
+    for i, zero in enumerate(bits):
+        sampled[i] = filtered[i * gap]
+    return sampled
 
     # plt.plot(np.convolve(normalized, sinc()))
     # plt.plot(zero_centered)
@@ -117,7 +123,6 @@ correlated = pickle.load(dump_file)
 delay = maxIdx - len(legit_noise)
 print maxIdx, maxVal, delay
 
-gap = int(PLAY_RATE / DATA_RATE) + 1
 encoded_signal = np_data[delay + gap * len(legit_noise):]
 print encoded_signal
 
