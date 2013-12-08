@@ -20,6 +20,10 @@ def legit_noise():
 # only calculate once to preserve known-ness
 legit_noise = legit_noise()
 
+def randomData():
+    np.random.seed(0)
+    return np.sign(np.random.randn(100))
+
 def sinc():
     # Define sinc function
     width = DATA_RATE
@@ -34,10 +38,10 @@ def normalize(signal):
 
 def cos(length):
     x = np.linspace(1 / 10000.0, length / 10000.0, length)
-    return np.cos(x * 2 * math.pi * 4)
+    return np.cos(x * 2 * math.pi * 400)
 
 def decode(received):
-    zero_centered = received.astype(np.float64) - 2**15
+    zero_centered = received.astype(np.float64)
     demodulated = received * cos(len(received))
     normalized = normalize(demodulated)
     filtered = np.convolve(normalized, receive_filter())
@@ -45,7 +49,7 @@ def decode(received):
     sampled = np.zeros(len(filtered) / gap)
     for i, zero in enumerate(sampled):
         sampled[i] = filtered[i * gap]
-    return filtered
+    return np.sign(sampled[44:-44])
 
 def maxIndex(list):
     maximum = max(list)
@@ -83,7 +87,6 @@ def smooth(x,window_len=11):
     np.hanning, np.hamming, np.bartlett, np.blackman, np.convolve
     scipy.signal.lfilter
  
-    TODO: the window parameter could be the window itself if an array instead of a string
     NOTE: length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
     """
     if x.ndim != 1:
@@ -126,7 +129,9 @@ delay = maxIdx + 1 - len(legit_noise)
 print maxIdx, maxVal, delay
 
 encoded_signal = np_data[delay + len(legit_noise):]
-plt.plot(decode(encoded_signal))
+data = decode(encoded_signal)
+print data - randomData()
+plt.plot(data)
 
 # impulse = channel[maxIdx:]
 # plt.plot(correlated)
