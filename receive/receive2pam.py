@@ -26,12 +26,15 @@ def randomData():
 
 def sinc():
     # Define sinc function
-    width = DATA_RATE
-    x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
-    return np.sinc(x)
+    raised_cosine(0)
+
+def raised_cosine(beta = 0):
+    width = PLAY_RATE / DATA_RATE * 6
+    x = np.linspace(-width / 2 + 1, width / 2, width) * DATA_RATE / PLAY_RATE
+    return np.sinc(x) * np.cos(math.pi * beta * x) / (1 - 4 * beta**2 * x**2)
 
 def receive_filter():
-    return sinc()
+    return raised_cosine(1)
 
 def normalize(signal):
     return signal * (1.0 / max(signal))
