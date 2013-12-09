@@ -19,8 +19,13 @@ def sinc():
     x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
     return np.sinc(x)
 
+def raised_cosine(beta = 0):
+    width = DATA_RATE
+    x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
+    return np.sinc(x) * np.cos(math.pi * beta * x) / (1 - 4 * beta**2 * x**2)
+
 def pulse():
-    return sinc()
+    return raised_cosine(.5)
 
 def createRandomData():
     np.random.seed(0)
