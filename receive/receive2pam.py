@@ -133,18 +133,22 @@ channel = np.correlate(noise_band, legit_noise, "full")
 delay = maxIdx + 1 - len(legit_noise)
 print maxIdx, maxVal, delay
 
+truncated_channel = channel[maxIdx - 200: maxIdx + 200]
+
 encoded_signal = np_data[delay + len(legit_noise):]
 data = decode(encoded_signal)
 plt.plot(data)
-print data[0:100] - randomData()
-print data[1:101] - randomData()
-print data[2:102] - randomData()
-print data[3:103] - randomData()
 
-# for i in range(10):
-    # check_data = data[i:100 + i]
-    # diff = check_data - randomData()
-    # fo
+print data[0:100] - randomData()
+
+for i in range(10):
+    check_data = data[i:100 + i]
+    diff = check_data - randomData()
+    num_wrong = 0
+    for elem in diff:
+        if elem != 0:
+            num_wrong += 1
+    print i, num_wrong
 
 print randomData()
 
