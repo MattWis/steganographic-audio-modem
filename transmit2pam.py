@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-DATA_RATE = 44.1
+DATA_RATE = 200.0
 PLAY_RATE = 44100.0
 
 def legit_noise():
@@ -16,20 +16,21 @@ def legit_noise():
 def sinc():
     # Define sinc function
     width = DATA_RATE
-    x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
+    x = np.linspace(-width / 2+1, width / 2, width) *  DATA_RATE / PLAY_RATE
     return np.sinc(x)
 
 def raised_cosine(beta = 0):
-    width = DATA_RATE
-    x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
+    width = PLAY_RATE / DATA_RATE * 6
+    x = np.linspace(-width / 2 + 1, width / 2, width) * DATA_RATE / PLAY_RATE
     return np.sinc(x) * np.cos(math.pi * beta * x) / (1 - 4 * beta**2 * x**2)
 
 def pulse():
-    return raised_cosine(.5)
+    return raised_cosine(1)
 
 def createRandomData():
     np.random.seed(0)
     data = np.sign(np.random.randn(100))
+    print data
     return encode(data)
 
 def encode(bits):
@@ -48,8 +49,6 @@ def encode(bits):
         
     unsigned_wave = (wave*cos)*10000
     return unsigned_wave.astype(np.int16)
-    #.astye(np.uint16)
-
 
 p = pyaudio.PyAudio()
 RATE = 44100
@@ -73,18 +72,18 @@ package =  np.append(legitNoise,randData)
 #package = randData
 
 # Plot data
-x1 = np.linspace(1,len(package), len(package)) 
-plt.plot(x1,package)
-plt.show()
+#x1 = np.linspace(1,len(package), len(package)) 
+#plt.plot(x1,package)
+#lt.show()
 
 # Save to pickle
-dump_file = open('perfectChannelSendData.txt', 'w')
-pickle.dump(package, dump_file)
+#dump_file = open('perfectChannelSendData.txt', 'w')
+#pickle.dump(package, dump_file)
+
+raw_input("Press enter to start playing data")
 
 # Play data
 fmt = "%dh" % (len(package))
-print max(package)
-print min(package)
 data = struct.pack(fmt, *list(package))
 stream.write(data)
 
