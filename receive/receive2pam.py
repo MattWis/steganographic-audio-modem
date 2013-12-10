@@ -45,15 +45,14 @@ def cos(length):
 
 def decode(received):
     zero_centered = received.astype(np.float64)
-    demodulated = received * cos(len(received))
+    demodulated = zero_centered * cos(len(zero_centered))
     normalized = normalize(demodulated)
     filtered = np.convolve(normalized, receive_filter())
 
     sampled = np.zeros(len(filtered) / gap)
     for i, zero in enumerate(sampled):
         sampled[i] = filtered[i * gap]
-    plt.plot(sampled)
-    return np.sign(sampled[DATA_RATE:]) * -1
+    return np.sign(sampled[6:]) # Based on number of zero-crossings in raised cosine
 
 def maxIndex(list):
     maximum = max(list)
