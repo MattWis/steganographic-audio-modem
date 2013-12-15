@@ -57,10 +57,10 @@ stream = p.open(format = pyaudio.paInt16,
                 frames_per_buffer = 1024)
 
 # Package white noise + data
-randData1 = createRandomData()
-randData2 = createRandomData()
+randData1 = createRandomData(400)
+# randData2 = createRandomData()
 legitNoise = legit_noise()
-package =  np.append(legitNoise,randData1 + randData2)
+package =  np.append(legitNoise,randData1)
 
 # Package just white noise
 #package = legitNoise

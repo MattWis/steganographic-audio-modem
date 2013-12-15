@@ -43,18 +43,18 @@ def receive_filter():
 def normalize(signal):
     return signal * (1.0 / max(signal))
 
-def cos(length):
+def cos(length, freq):
     x = np.linspace(1 / 10000.0, length / 10000.0, length)
     return np.cos(x * 2 * math.pi * 400)
 
-def sin(length):
+def sin(length, freq):
     x = np.linspace(1 / 10000.0, length / 10000.0, length)
     return np.sin(x * 2 * math.pi * 400)
 
-def decode(received):
+def decode(received, freq):
     zero_centered = received.astype(np.float64)
-    real = zero_centered * cos(len(zero_centered)).astype(np.complex_)
-    imag =  zero_centered * sin(len(zero_centered)).astype(np.complex_)
+    real = zero_centered * cos(len(zero_centered), freq).astype(np.complex_)
+    imag =  zero_centered * sin(len(zero_centered), freq).astype(np.complex_)
     combined = real + (1j) * imag
     filtered = np.convolve(combined, receive_filter())
     sampled = np.zeros(len(filtered) / gap)
@@ -140,7 +140,7 @@ delay = maxIdx + 1 - len(legit_noise)
 print maxIdx, maxVal, delay
 
 encoded_signal = np_data[delay + len(legit_noise):]
-data = decode(encoded_signal)
+data = decode(encoded_signal, 400)
 print data[:100] - randomData()
 plt.plot(data.imag)
 plt.plot(data.real)
