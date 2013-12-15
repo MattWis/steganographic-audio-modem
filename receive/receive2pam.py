@@ -30,8 +30,15 @@ def sinc():
     x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
     return np.sinc(x)
 
+def raised_cosine(beta = 0):
+    width = PLAY_RATE / DATA_RATE * 6
+    x = np.linspace(-width / 2 + 1, width / 2, width) * DATA_RATE / PLAY_RATE
+    width = DATA_RATE
+    x = np.linspace(-width / 2, width / 2, width * PLAY_RATE / DATA_RATE)
+    return np.sinc(x) * np.cos(math.pi * beta * x) / (1 - 4 * beta**2 * x**2)
+
 def receive_filter():
-    return sinc()
+    return raised_cosine(1)
 
 def normalize(signal):
     return signal * (1.0 / max(signal))
@@ -40,16 +47,20 @@ def cos(length):
     x = np.linspace(1 / 10000.0, length / 10000.0, length)
     return np.cos(x * 2 * math.pi * 400)
 
+def sin(length):
+    x = np.linspace(1 / 10000.0, length / 10000.0, length)
+    return np.sin(x * 2 * math.pi * 400)
+
 def decode(received):
     zero_centered = received.astype(np.float64)
-    demodulated = received * cos(len(received))
-    normalized = normalize(demodulated)
-    filtered = np.convolve(normalized, receive_filter())
-
+    real = zero_centered * cos(len(zero_centered)).astype(np.complex_)
+    imag =  zero_centered * sin(len(zero_centered)).astype(np.complex_)
+    combined = real + (1j) * imag
+    filtered = np.convolve(combined, receive_filter())
     sampled = np.zeros(len(filtered) / gap)
     for i, zero in enumerate(sampled):
         sampled[i] = filtered[i * gap]
-    return np.sign(sampled[44:-44])
+    return np.sign(sampled[44:])
 
 def maxIndex(list):
     maximum = max(list)
@@ -130,15 +141,7 @@ print maxIdx, maxVal, delay
 
 encoded_signal = np_data[delay + len(legit_noise):]
 data = decode(encoded_signal)
-print data - randomData()
-plt.plot(data)
-
-# impulse = channel[maxIdx:]
-# plt.plot(correlated)
-# plt.show()
-
-# channel = np.fft.fft(impulse)
-# smooth_channel = smooth(channel, 500)
-# freq = np.fft.fftfreq(impulse.shape[-1])
-# plt.plot(smooth(freq * 44100, 500), smooth(np.sqrt(channel.real**2 + channel.imag**2), 500), 'k')
+print data[:100] - randomData()
+plt.plot(data.imag)
+plt.plot(data.real)
 plt.show()
