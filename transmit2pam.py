@@ -3,6 +3,7 @@ import pyaudio
 import sys
 import struct
 import numpy as np
+from scipy.io import wavfile
 import matplotlib.pyplot as plt
 import pickle
 
@@ -45,7 +46,6 @@ def encode(bits, freq):
     return unsigned_wave.astype(np.int16)
     #.astye(np.uint16)
 
-
 p = pyaudio.PyAudio()
 RATE = 44100
 
@@ -60,7 +60,15 @@ stream = p.open(format = pyaudio.paInt16,
 randData1 = createRandomData(1200)
 randData2 = createRandomData(800, seed=2)
 legitNoise = legit_noise()
-package =  np.append(legitNoise,randData1 + randData2)
+
+# Load a song and add that in
+(fs, song) = wavfile.read('Let It Go - Frozen - Full.wav')
+
+# first = np.where(song>100)[0][0]
+# avsong = np.array([[sum(song[first-10:])/2],[sum(song[first-10:])/2]])
+# wavfile.write('../Frozen.wav', avsong, fs)
+
+package = np.append(legitNoise,randData1 + randData2 + song[:len(randData1)])
 
 # Package just white noise
 #package = legitNoise

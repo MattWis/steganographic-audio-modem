@@ -139,7 +139,11 @@ channel = np.correlate(noise_band, legit_noise, "full")
 delay = maxIdx + 1 - len(legit_noise)
 print maxIdx, maxVal, delay
 
+(fs, song) = wavfile.read('../Let It Go - Frozen - Full.wav')
+print fs
+
 encoded_signal = np_data[delay + len(legit_noise):]
+encoded_signal -= song()
 data1 = decode(encoded_signal, 1200)
 data2 = decode(encoded_signal, 800)
 print data1[:100] - randomData()
