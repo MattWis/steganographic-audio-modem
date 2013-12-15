@@ -3,6 +3,7 @@ import pyaudio
 import sys
 import struct
 import numpy as np
+import scipy.linalg
 import matplotlib.pyplot as plt
 import wave
 import pickle
@@ -15,23 +16,30 @@ gap = int(PLAY_RATE / DATA_RATE)
 
 def legit_noise():
     np.random.seed(0)
-    return np.random.randn(44100 * 2)
+    return np.random.randn(88200)
 
 # only calculate once to preserve known-ness
 legit_noise = legit_noise()
 
 def randomData():
     np.random.seed(0)
-    return np.sign(np.random.randn(100))
+    return np.sign(np.random.randn(500))
 
 def sinc():
     # Define sinc function
     raised_cosine(0)
 
-def raised_cosine(beta = 0):
-    width = PLAY_RATE / DATA_RATE * 6
+def raised_cosine(beta = 0, width = PLAY_RATE / DATA_RATE * 6):
     x = np.linspace(-width / 2 + 1, width / 2, width) * DATA_RATE / PLAY_RATE
-    return np.sinc(x) * np.cos(math.pi * beta * x) / (1 - 4 * beta**2 * x**2)
+    y = np.sinc(x) * np.cos(math.pi * beta * x) / (1 - 4 * beta**2 * x**2)
+    one_half = np.where(x == .5)
+    y[one_half] = .5
+    minus_one_half = np.where(x == -.5)
+    y[minus_one_half] = .5
+    return y
+
+def d(length):
+    return np.append(np.array([1]), np.zeros(length - 1)).astype(np.complex_)
 
 def receive_filter():
     return raised_cosine(1)
@@ -43,16 +51,27 @@ def cos(length):
     x = np.linspace(1 / 10000.0, length / 10000.0, length)
     return np.cos(x * 2 * math.pi * 400)
 
+def sin(length):
+    x = np.linspace(1 / 10000.0, length / 10000.0, length)
+    return np.sin(x * 2 * math.pi * 400)
+
 def decode(received):
     zero_centered = received.astype(np.float64)
-    demodulated = zero_centered * cos(len(zero_centered))
-    normalized = normalize(demodulated)
-    filtered = np.convolve(normalized, receive_filter())
+    real = zero_centered * cos(len(zero_centered)).astype(np.complex_)
+    imag = zero_centered * sin(len(zero_centered)).astype(np.complex_)
+    combined = real + (1j) * imag
 
-    sampled = np.zeros(len(filtered) / gap)
+    filtered = np.convolve(combined, receive_filter())
+    sampled = np.zeros(len(filtered) / gap).astype(np.complex_)
     for i, zero in enumerate(sampled):
         sampled[i] = filtered[i * gap]
-    return np.sign(sampled[6:]) # Based on number of zero-crossings in raised cosine
+    return sampled[6:] # Based on number of zero-crossings in raised cosine
+
+def demodulate_noise(noise):
+    zero_centered = noise.astype(np.float64)
+    demodulated = zero_centered * cos(len(zero_centered))
+    normalized = normalize(demodulated)
+    return np.convolve(normalized, receive_filter())
 
 def maxIndex(list):
     maximum = max(list)
@@ -69,34 +88,71 @@ def get_next_data_from_wav(wav_file, num_seconds):
     data2 = struct.unpack(fmt, raw_data)
     return np.array(data2, dtype='int16')
 
+def generate_R_matrix(q):
+    first_row = np.zeros(len(q) * 2).astype(np.complex_)
+    first_row[0] = q[0]
+    first_column = np.append(q, np.zeros(len(q) * 2 - 1))
+    return np.matrix(scipy.linalg.toeplitz(first_column, first_row))
+
 sound_file = wave.open("output.wav", 'r')
 np_data = get_next_data_from_wav(sound_file, 10)
 
-# dump_file = open('correlated1.txt', 'r')
+# dump_file = open('correlated.txt', 'r')
 # channel = pickle.load(dump_file)
 
 # dump_file = open('perfectChannelSendData.txt', 'r')
 # np_data = pickle.load(dump_file)
 
-noise_band = np_data[:44100*4]
+noise_band = np_data[:44100*2]
 channel = np.correlate(noise_band, legit_noise, "full")
-# plt.plot(channel)
-# plt.show()
 
 (maxIdx, maxVal) = maxIndex(abs(channel))
 delay = maxIdx + 1 - len(legit_noise)
 print maxIdx, maxVal, delay
 
-truncated_channel = channel[maxIdx - 200: maxIdx + 200]
-
 encoded_signal = np_data[delay + len(legit_noise):]
 data = decode(encoded_signal)
-plt.plot(data)
 
-print data[0:100] - randomData()
+# print data
+# plt.plot(data.real)
+# plt.plot(data.imag)
+# plt.show()
+
+noise_band = data[:500]
+discrete_channel = np.correlate(noise_band, legit_noise[:500], "full")
+# plt.plot(discrete_channel.real)
+# plt.plot(discrete_channel.imag)
+# plt.show()
+
+print data
+real_data = data[500:]
+
+# plt.plot(real_data.real, 'b')
+# plt.plot(real_data.imag, 'k')
+# plt.plot(randomData() * 20000, 'g')
+# plt.show()
+
+(maxIdx, maxVal) = maxIndex(abs(discrete_channel))
+truncated_channel = discrete_channel[maxIdx - 10: maxIdx + 10]
+q = truncated_channel
+R = generate_R_matrix(q)
+d = np.matrix(d(3 * len(q) - 1)).H
+least_squares_filter = np.array(np.matrix(np.linalg.pinv(R) * d).flat)
+
+
+print "LSF"
+# plt.plot(least_squares_filter)
+# plt.show()
+
+equalized_data = np.convolve(least_squares_filter, real_data)
+
+# print equalized_data
+final_data = np.sign(equalized_data)
+# print randomData()
+print final_data[:500] - randomData()
 
 for i in range(10):
-    check_data = data[i:100 + i]
+    check_data = final_data[i:500 + i]
     diff = check_data - randomData()
     num_wrong = 0
     for elem in diff:
@@ -104,10 +160,6 @@ for i in range(10):
             num_wrong += 1
     print i, num_wrong
 
-print randomData()
-
-
-# impulse = channel[maxIdx:]
-# plt.plot(correlated)
+# print randomData()
 
 plt.show()
