@@ -26,7 +26,7 @@ def pulse():
 def normalize(signal):
     return signal / max(signal)
 
-def decode(received):
+def decode(received, freq):
     zero_centered = received.astype(np.float64) - 2**15
     normalized = normalize(zero_centered)
 

@@ -8,6 +8,7 @@ import pickle
 
 DATA_RATE = 44.1
 PLAY_RATE = 44100.0
+np.random.seed(0)
 
 def legit_noise():
     np.random.seed(0)
@@ -22,25 +23,24 @@ def sinc():
 def pulse():
     return sinc()
 
-def createRandomData():
-    np.random.seed(0)
+def createRandomData(freq):
     data = np.sign(np.random.randn(100))
-    return encode(data)
+    return encode(data, freq)
 
-def encode(bits):
+def encode(bits, freq):
 
     gap = int(PLAY_RATE / DATA_RATE)
     wave = np.zeros(gap * len(bits) + len(pulse()))
     x = np.linspace(1/10000.0,len(wave)/10000.0,len(wave))
 
-    cos = np.cos(x*2*math.pi*400)
+    cos = np.cos(x*2*math.pi*freq)
 
     for i, bit in enumerate(bits):
         deadtime = np.zeros(gap * i)
         convolved = np.append(deadtime, pulse() * bit)
         convolved.resize(len(wave))
-        wave += convolved   
-        
+        wave += convolved
+
     unsigned_wave = (wave*cos)*10000
     return unsigned_wave.astype(np.int16)
     #.astye(np.uint16)
@@ -57,9 +57,10 @@ stream = p.open(format = pyaudio.paInt16,
                 frames_per_buffer = 1024)
 
 # Package white noise + data
-randData = createRandomData()
+randData1 = createRandomData()
+randData2 = createRandomData()
 legitNoise = legit_noise()
-package =  np.append(legitNoise,randData)
+package =  np.append(legitNoise,randData1 + randData2)
 
 # Package just white noise
 #package = legitNoise
@@ -76,14 +77,14 @@ plt.show()
 dump_file = open('perfectChannelSendData.txt', 'w')
 pickle.dump(package, dump_file)
 
-# Play data
-fmt = "%dh" % (len(package))
-print max(package)
-print min(package)
-data = struct.pack(fmt, *list(package))
-stream.write(data)
+# # Play data
+# fmt = "%dh" % (len(package))
+# print max(package)
+# print min(package)
+# data = struct.pack(fmt, *list(package))
+# stream.write(data)
 
-stream.stop_stream()
-stream.close()
+# stream.stop_stream()
+# stream.close()
 
-p.terminate()
+# p.terminate()
