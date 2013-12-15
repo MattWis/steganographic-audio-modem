@@ -6,12 +6,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-DATA_RATE = 200.0
+DATA_RATE = 100.0
 PLAY_RATE = 44100.0
 
 def legit_noise():
     np.random.seed(0)
-    return np.random.randn(44100*2) * 5000
+    #return np.random.randn(44100*2) * 5000
+    return np.random.randn(200) ##* 5000
 
 def sinc():
     # Define sinc function
@@ -29,7 +30,7 @@ def pulse():
 
 def createRandomData():
     np.random.seed(0)
-    data = np.sign(np.random.randn(100))
+    data = np.sign(np.random.randn(500))
     print data
     return encode(data)
 
@@ -62,19 +63,19 @@ stream = p.open(format = pyaudio.paInt16,
 
 # Package white noise + data
 randData = createRandomData()
-legitNoise = legit_noise()
-package =  np.append(legitNoise,randData)
+legitNoise = encode(legit_noise())
+#package =  np.append(legitNoise,randData)
 
 # Package just white noise
-#package = legitNoise
+package = legitNoise
 
 # Package just data
 #package = randData
 
 # Plot data
-#x1 = np.linspace(1,len(package), len(package)) 
-#plt.plot(x1,package)
-#lt.show()
+x1 = np.linspace(1,len(package), len(package)) 
+plt.plot(x1,package)
+plt.show()
 
 # Save to pickle
 #dump_file = open('perfectChannelSendData.txt', 'w')
