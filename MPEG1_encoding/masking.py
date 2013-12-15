@@ -6,6 +6,17 @@ from decimal import Decimal
 import timeit
 
 MP1 = CDLL('/home/kevin/ADcomm/steganographic-audio-modem/MPEG1_encoding/PsychoMpegOne.so')
+MP1.PsychoMpegOne.restype = c_long
+MP1.PsychoMpegOne.argtypes = [ \
+	POINTER(c_short), c_long,  \
+	c_long, \
+	c_long, \
+	POINTER(c_double), POINTER(c_double), \
+	POINTER(c_double), c_long, \
+	POINTER(c_double), c_long, \
+	POINTER(c_double)
+	]
+
 spec_out = np.zeros(1024)
 mask_out = np.zeros(1024)
 meff_out = np.zeros(1024)
@@ -14,17 +25,6 @@ spef_out = np.zeros(1024)
 
 def make_fake_data():
 	# Make a fake signal, and then calculate the mask generated
-	MP1.PsychoMpegOne.restype = c_long
-	MP1.PsychoMpegOne.argtypes = [ \
-		POINTER(c_short), c_long,  \
-		c_long, \
-		c_long, \
-		POINTER(c_double), POINTER(c_double), \
-		POINTER(c_double), c_long, \
-		POINTER(c_double), c_long, \
-		POINTER(c_double)
-		]
-
 	fs = 44100
 	t = np.arange(0, 1024, dtype=np.int16)
 	time = t/float(fs)
@@ -50,7 +50,7 @@ def make_test_mask(samples):
 	smr_eff			= np.ones(1024).ctypes.data_as(POINTER(c_double))
 
 	# calculate the psychoacoustic masking threshold
-	dummy = MP1.PsychoMpegOne (short_data, bufferlen,  \
+	status = MP1.PsychoMpegOne (short_data, bufferlen,  \
 		    fs, \
 		    fft_size,  \
 		    spectrum, masking, \
@@ -70,9 +70,10 @@ def make_test_mask(samples):
 	# plt.plot(freqs[0:513], final_meff[0:513], color='g')
 	# plt.plot(freqs[0:513], final_spef[0:513], color='b')
 	# plt.show()
-
+	return final_meff[np.arange(1, 512, 32)]
 
 if __name__ == '__main__':
 	samples = make_fake_data()
-	make_test_mask(samples)
+	print make_test_mask(samples)
+
 	# timeit.timeit("make_test_mask(samples)", setup="from __main__ import make_test_mask, samples", number=10)
