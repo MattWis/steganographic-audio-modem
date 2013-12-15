@@ -1003,13 +1003,12 @@ void make_map(mask *power, g_thres *ltg)
 */
 }
 
-sh 
-
 /***********************************************************************
  *
  * Addition im linearen Leistungsbereich
  *
  **********************************************************************/
+
 double add_db(a,b)  
     double a,b;
 {
@@ -1950,8 +1949,8 @@ long PsychoMpegOne (short buffer[], long bufferlen,
 		    double *masking_eff, long masking_range,
 		    double *smr_eff)
 {
-    long status, 
-	i, 
+    long status,
+	i,
 	fft_order, ld2_tmp;
    
     static long init =0;
@@ -1971,7 +1970,7 @@ long PsychoMpegOne (short buffer[], long bufferlen,
 	if (pow( 2.0, (double)fft_order) != fftsize)
 	{  
 	    fftsize = (long)pow( 2.0, (double)fft_order); 
-	    printf("PsychoMpegOne(): changing fftsize to fftsize=%ld\n", fftsize);
+	    // printf("PsychoMpegOne(): changing fftsize to fftsize=%ld\n", fftsize);
 	}
      
 	if( (buffer==NULL) ||
@@ -1980,30 +1979,30 @@ long PsychoMpegOne (short buffer[], long bufferlen,
 	    (masking_eff==NULL) ||
 	    (spectrum_eff==NULL) )
 	{  
-	    printf("PsychoMpegOne(): uninitialized pointer in (one of the) input array(s)! \n");
+	    // printf("PsychoMpegOne(): uninitialized pointer in (one of the) input array(s)! \n");
 	    exit(-1);
 	}
 	if ((fs<4000) || (fs>48000))
 	{
-	    printf("PsychoMpegOne(): illegal value (=%ld) for sampling frequeny fs [Hz]\n",
-		   fs);
+	    // printf("PsychoMpegOne(): illegal value (=%ld) for sampling frequeny fs [Hz]\n",
+		   // fs);
 	    exit(-1);
 	}
 	ld2_tmp = ld (spectrum_range);
 	spectrum_range = pow(2.0, (double)ld2_tmp);
 	if( (spectrum_range<1) || (spectrum_range>fftsize/4))
 	{
-	    printf("PsychoMpegOne(): illegal value (=%ld) for spectrum_range.\n",
-		   spectrum_range);
+	    // printf("PsychoMpegOne(): illegal value (=%ld) for spectrum_range.\n",
+		   // spectrum_range);
 	    exit(-1);
 	}
-	
+
 	ld2_tmp = ld (masking_range);
 	masking_range = pow(2.0, (double)ld2_tmp);
 	if( (masking_range<1) || (masking_range>fftsize/4))
 	{
-	    printf("PsychoMpegOne(): illegal value (=%ld) for masking_range.\n",
-		   masking_range);
+	    // printf("PsychoMpegOne(): illegal value (=%ld) for masking_range.\n",
+		   // masking_range);
 	    exit(-1);
 	}
 
@@ -2011,73 +2010,73 @@ long PsychoMpegOne (short buffer[], long bufferlen,
 	/****
 	 * report parameters:
 	 */
-	sprintf(name, "%s", "PsychoMpegOne()");
-	printf("%s: \n", name);
-	printf("%s: Version %s; compiled at %s, %s \n", 
-	       name, PMO_VERSION_STRING, __DATE__, __TIME__);
-	printf("%s: Parameter used: \n", name);
-	printf("%s:   sampling frequency [Hz]               %6ld\n", name, fs);
-	printf("%s:   fft_size [smp]                        %6ld\n", name, fftsize);
-	printf("%s:   lines in the Power density spectrum   %6ld\n", name, fftsize/2);
-	printf("%s:   spek_range [smp] for mean()-calc      %6ld\n", name, spectrum_range);
-	printf("%s:   mask_range [smp] for min()-calc       %6ld\n", name, masking_range);
+	// sprintf(name, "%s", "PsychoMpegOne()");
+	// printf("%s: \n", name);
+	// printf("%s: Version %s; compiled at %s, %s \n", 
+	       // name, PMO_VERSION_STRING, __DATE__, __TIME__);
+	// printf("%s: Parameter used: \n", name);
+	// printf("%s:   sampling frequency [Hz]               %6ld\n", name, fs);
+	// printf("%s:   fft_size [smp]                        %6ld\n", name, fftsize);
+	// printf("%s:   lines in the Power density spectrum   %6ld\n", name, fftsize/2);
+	// printf("%s:   spek_range [smp] for mean()-calc      %6ld\n", name, spectrum_range);
+	// printf("%s:   mask_range [smp] for min()-calc       %6ld\n", name, masking_range);
 
 	/*
 	 * report #define's:
 	 */
 #ifdef PMODEF_CONSIDER_HEAR
-	printf("%s:   hearing threshold in quiet will be considered.\n", name);
+	// printf("%s:   hearing threshold in quiet will be considered.\n", name);
 #ifdef PMODEF_USE_CONSTHEAR
-	printf("%s:   hearing threshold in quiet is constant: LTG_HEAR=%f\n", 
+	// printf("%s:   hearing threshold in quiet is constant: LTG_HEAR=%f\n", 
 	       name, (double)LTG_HEAR);
 #else	
-	printf("%s:   hearing threshold in quiet is not a constant.\n", name);
+	// printf("%s:   hearing threshold in quiet is not a constant.\n", name);
 #endif
 #else	
-	printf("%s:   hearing threshold in quiet will NOT be considered.\n", name);
+	// printf("%s:   hearing threshold in quiet will NOT be considered.\n", name);
 #endif /* PMODEF_CONSIDER_HEAR */	
 #ifdef PMODEF_NOISE_MAXPOS
-	printf("%s:   pos(noise-component) := pos(max(power)); unlike MPEG! \n", name);
+	// printf("%s:   pos(noise-component) := pos(max(power)); unlike MPEG! \n", name);
 #endif 
 #ifdef PMODEF_READSAMPLE
-	printf("%s:   input frame samples will be defined using separate file.\n", name);
+	// printf("%s:   input frame samples will be defined using separate file.\n", name);
 #endif	
 
 #ifdef PMODEF_USE_TABLE
-	printf("%s:   parameter arrays are read from table-file. \n", name);
+	// printf("%s:   parameter arrays are read from table-file. \n", name);
 #else
-        printf("%s:   parameter arrays are calculated using formula. \n", name);
+        // printf("%s:   parameter arrays are calculated using formula. \n", name);
 #endif	
 #ifdef PMODEF_NORM_MT
-	printf("%s:   global MT wird mit mean() statt sum() berechnet; Ergebnis ist falsch!\n", name);
+	// printf("%s:   global MT wird mit mean() statt sum() berechnet; Ergebnis ist falsch!\n", name);
 #endif   
 
 #ifdef PMODEF_WRITELTG
-	printf("%s:   Global MaskThr (ltg[].x) is written to binary file.\n", name);
+	// printf("%s:   Global MaskThr (ltg[].x) is written to binary file.\n", name);
 #endif
 
 #ifdef PMODEF_WRITELTMIN
-	printf("%s:   Global MaskThr (warped to fftsize/2) is written to binary file.\n", name);
+	// printf("%s:   Global MaskThr (warped to fftsize/2) is written to binary file.\n", name);
 #endif
 
 #ifdef PMODEF_WRITELTMIN_OLD
-	printf("%s:   Min. MaskThr (MPEG 32-chn resol.) is written to binary file.\n", name);
+	// printf("%s:   Min. MaskThr (MPEG 32-chn resol.) is written to binary file.\n", name);
 #endif
 
 #ifdef PMODEF_WRITESPIKE
-	printf("%s:   signal:=sum(spek) (MPEGs sign est.) is written to binary file.\n", name);
+	// printf("%s:   signal:=sum(spek) (MPEGs sign est.) is written to binary file.\n", name);
 #endif
 
 #ifdef PMODEF_WRITESPECTRUM_EFF
-	printf("%s:   spectrum_eff is written to binary file.\n", name);
+	// printf("%s:   spectrum_eff is written to binary file.\n", name);
 #endif
 
 #ifdef PMODEF_WRITEMASKING_EFF
-	printf("%s:   masking_eff is written to binary file.\n", name);
+	// printf("%s:   masking_eff is written to binary file.\n", name);
 #endif
 
 
-	printf("%s: \n", name);
+	// printf("%s: \n", name);
 	init++;
     }
     /*
