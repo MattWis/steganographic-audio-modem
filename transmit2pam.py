@@ -8,7 +8,6 @@ import pickle
 
 DATA_RATE = 44.1
 PLAY_RATE = 44100.0
-np.random.seed(0)
 
 def legit_noise():
     np.random.seed(0)
@@ -23,7 +22,8 @@ def sinc():
 def pulse():
     return sinc()
 
-def createRandomData(freq):
+def createRandomData(freq, seed=0):
+    np.random.seed(seed)
     data = np.sign(np.random.randn(100))
     return encode(data, freq)
 
@@ -57,10 +57,10 @@ stream = p.open(format = pyaudio.paInt16,
                 frames_per_buffer = 1024)
 
 # Package white noise + data
-randData1 = createRandomData(400)
-# randData2 = createRandomData()
+randData1 = createRandomData(1200)
+randData2 = createRandomData(800, seed=2)
 legitNoise = legit_noise()
-package =  np.append(legitNoise,randData1)
+package =  np.append(legitNoise,randData1 + randData2)
 
 # Package just white noise
 #package = legitNoise

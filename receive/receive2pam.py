@@ -20,8 +20,8 @@ def legit_noise():
 # only calculate once to preserve known-ness
 legit_noise = legit_noise()
 
-def randomData():
-    np.random.seed(0)
+def randomData(seed=0):
+    np.random.seed(seed)
     return np.sign(np.random.randn(100))
 
 def sinc():
@@ -45,11 +45,11 @@ def normalize(signal):
 
 def cos(length, freq):
     x = np.linspace(1 / 10000.0, length / 10000.0, length)
-    return np.cos(x * 2 * math.pi * 400)
+    return np.cos(x * 2 * math.pi * freq)
 
 def sin(length, freq):
     x = np.linspace(1 / 10000.0, length / 10000.0, length)
-    return np.sin(x * 2 * math.pi * 400)
+    return np.sin(x * 2 * math.pi * freq)
 
 def decode(received, freq):
     zero_centered = received.astype(np.float64)
@@ -140,8 +140,10 @@ delay = maxIdx + 1 - len(legit_noise)
 print maxIdx, maxVal, delay
 
 encoded_signal = np_data[delay + len(legit_noise):]
-data = decode(encoded_signal, 400)
-print data[:100] - randomData()
-plt.plot(data.imag)
-plt.plot(data.real)
-plt.show()
+data1 = decode(encoded_signal, 1200)
+data2 = decode(encoded_signal, 800)
+print data1[:100] - randomData()
+print data2[:100] - randomData(seed=2)
+# plt.plot(data.imag)
+# plt.plot(data.real)
+# plt.show()
