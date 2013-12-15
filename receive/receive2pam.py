@@ -10,9 +10,12 @@ import pickle
 import os
 import math
 
-DATA_RATE = 200.0
+DATA_RATE = 300.0
 PLAY_RATE = 44100.0
 gap = int(PLAY_RATE / DATA_RATE)
+NOISE_SYMBOLS = 88200
+ENCODED_NOISE = 500
+DATA_SYMBOLS = 475
 
 def legit_noise():
     np.random.seed(0)
@@ -23,7 +26,7 @@ legit_noise = legit_noise()
 
 def randomData():
     np.random.seed(0)
-    return np.sign(np.random.randn(500))
+    return np.sign(np.random.randn(DATA_SYMBOLS))
 
 def sinc():
     # Define sinc function
@@ -118,14 +121,14 @@ data = decode(encoded_signal)
 # plt.plot(data.imag)
 # plt.show()
 
-noise_band = data[:500]
-discrete_channel = np.correlate(noise_band, legit_noise[:500], "full")
+noise_band = data[:ENCODED_NOISE]
+discrete_channel = np.correlate(noise_band, legit_noise[:ENCODED_NOISE], "full")
 # plt.plot(discrete_channel.real)
 # plt.plot(discrete_channel.imag)
 # plt.show()
 
 print data
-real_data = data[500:]
+real_data = data[ENCODED_NOISE:]
 
 # plt.plot(real_data.real, 'b')
 # plt.plot(real_data.imag, 'k')
@@ -141,7 +144,8 @@ least_squares_filter = np.array(np.matrix(np.linalg.pinv(R) * d).flat)
 
 
 print "LSF"
-# plt.plot(least_squares_filter)
+# plt.plot(least_squares_filter.real)
+# plt.plot(least_squares_filter.imag)
 # plt.show()
 
 equalized_data = np.convolve(least_squares_filter, real_data)
@@ -149,10 +153,10 @@ equalized_data = np.convolve(least_squares_filter, real_data)
 # print equalized_data
 final_data = np.sign(equalized_data)
 # print randomData()
-print final_data[:500] - randomData()
+print final_data[:DATA_SYMBOLS] - randomData()
 
 for i in range(10):
-    check_data = final_data[i:500 + i]
+    check_data = final_data[i:DATA_SYMBOLS + i]
     diff = check_data - randomData()
     num_wrong = 0
     for elem in diff:
