@@ -9,7 +9,7 @@ import wave
 import pickle
 import os
 import math
-from lyrics import *
+import lyrics
 from constants import *
 
 def legit_noise():
@@ -21,7 +21,7 @@ legit_noise = legit_noise()
 
 def randomData():
     np.random.seed(0)
-    return np.sign(np.random.randn(DATA_SYMBOLS * 2))
+    return lyrics.data #np.sign(np.random.randn(DATA_SYMBOLS * 2))
 
 def d(length):
     return np.append(np.array([1]), np.zeros(length - 1)).astype(np.complex_)
@@ -118,6 +118,8 @@ sin_data = np.sign((-1j) * equalized_data)
 final_data = np.append(cos_data, sin_data)
 # print randomData()
 print final_data[:DATA_SYMBOLS * 2] - randomData()
+
+print lyrics.get_string(final_data[:DATA_SYMBOLS * 2])
 
 for i in range(10):
     check_data = final_data[i:DATA_SYMBOLS * 2 + i]
