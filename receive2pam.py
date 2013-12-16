@@ -34,6 +34,7 @@ def get_bits(string):
     return output
 
 bits = get_bits(lyrics)
+print len(bits)
 
 def legit_noise():
     np.random.seed(0)
