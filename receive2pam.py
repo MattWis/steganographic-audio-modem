@@ -95,7 +95,7 @@ def get_least_squares_filter(noise_band, real_data):
     return np.array(np.matrix(np.linalg.pinv(R) * desired).flat)
 
 sound_file = wave.open("output.wav", 'r')
-np_data = get_next_data_from_wav(sound_file, 15)
+np_data = get_next_data_from_wav(sound_file, 30)
 
 # dump_file = open('correlated.txt', 'r')
 # channel = pickle.load(dump_file)
@@ -113,15 +113,18 @@ plt.show()
 equalized_data = np.convolve(least_squares_filter, real_data)
 
 print equalized_data
-cos_data = np.sign(equalized_data)[:DATA_SYMBOLS]
-sin_data = np.sign((-1j) * equalized_data)
-final_data = np.append(cos_data, sin_data)
+cos_data = (-1) * np.sign(equalized_data)[:DATA_SYMBOLS]
+sin_data = np.sign((-1j) * equalized_data)[:DATA_SYMBOLS]
+final_data = np.append(sin_data, cos_data)
 # print randomData()
 print final_data[:DATA_SYMBOLS * 2] - randomData()
 
-print lyrics.get_string(final_data[:DATA_SYMBOLS * 2])
+print "sin: ", lyrics.get_string(sin_data[:DATA_SYMBOLS])
+print "cos: ", lyrics.get_string(cos_data[:DATA_SYMBOLS])
 
-for i in range(10):
+print "final: ", lyrics.get_string(final_data)
+
+for i in range(1):
     check_data = final_data[i:DATA_SYMBOLS * 2 + i]
     diff = check_data - randomData()
     num_wrong = 0
