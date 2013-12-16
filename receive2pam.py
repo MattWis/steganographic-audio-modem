@@ -113,8 +113,8 @@ plt.show()
 equalized_data = np.convolve(least_squares_filter, real_data)
 
 print equalized_data
-cos_data = (-1) * np.sign(equalized_data)[:DATA_SYMBOLS]
-sin_data = np.sign((-1j) * equalized_data)[:DATA_SYMBOLS]
+cos_data = np.sign(equalized_data)[:DATA_SYMBOLS]
+sin_data = (-1) * np.sign((-1j) * equalized_data)[:DATA_SYMBOLS]
 final_data = np.append(sin_data, cos_data)
 # print randomData()
 print final_data[:DATA_SYMBOLS * 2] - randomData()
