@@ -9,14 +9,8 @@ import wave
 import pickle
 import os
 import math
-import lyrics
-
-DATA_RATE = 300.0
-PLAY_RATE = 44100.0
-gap = int(PLAY_RATE / DATA_RATE)
-NOISE_SYMBOLS = 88200
-ENCODED_NOISE = 500
-DATA_SYMBOLS = 475
+from lyrics import *
+from constants import *
 
 def legit_noise():
     np.random.seed(0)
