@@ -14,7 +14,7 @@ from constants import *
 
 def legit_noise():
     np.random.seed(0)
-    return np.random.randn(88200)
+    return np.random.randn(NOISE_SYMBOLS)
 
 # only calculate once to preserve known-ness
 legit_noise = legit_noise()
@@ -22,19 +22,6 @@ legit_noise = legit_noise()
 def randomData():
     np.random.seed(0)
     return np.sign(np.random.randn(DATA_SYMBOLS))
-
-def sinc():
-    # Define sinc function
-    raised_cosine(0)
-
-def raised_cosine(beta = 0, width = PLAY_RATE / DATA_RATE * 6):
-    x = np.linspace(-width / 2 + 1, width / 2, width) * DATA_RATE / PLAY_RATE
-    y = np.sinc(x) * np.cos(math.pi * beta * x) / (1 - 4 * beta**2 * x**2)
-    one_half = np.where(x == .5)
-    y[one_half] = .5
-    minus_one_half = np.where(x == -.5)
-    y[minus_one_half] = .5
-    return y
 
 def d(length):
     return np.append(np.array([1]), np.zeros(length - 1)).astype(np.complex_)
@@ -44,14 +31,6 @@ def receive_filter():
 
 def normalize(signal):
     return signal * (1.0 / max(signal))
-
-def cos(length):
-    x = np.linspace(1 / 10000.0, length / 10000.0, length)
-    return np.cos(x * 2 * math.pi * 400)
-
-def sin(length):
-    x = np.linspace(1 / 10000.0, length / 10000.0, length)
-    return np.sin(x * 2 * math.pi * 400)
 
 def decode(received):
     zero_centered = received.astype(np.float64)
