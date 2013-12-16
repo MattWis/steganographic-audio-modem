@@ -1,3 +1,6 @@
+import numpy as np
+import math
+
 DATA_RATE = 300.0
 PLAY_RATE = 44100.0
 gap = int(PLAY_RATE / DATA_RATE)

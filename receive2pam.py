@@ -71,6 +71,16 @@ def generate_R_matrix(q):
     first_column = np.append(q, np.zeros(len(q) * 2 - 1))
     return np.matrix(scipy.linalg.toeplitz(first_column, first_row))
 
+def use_white_noise_to_align(np_data):
+    noise_band = np_data[:44100*2]
+    channel = np.correlate(noise_band, legit_noise, "full")
+
+    (maxIdx, maxVal) = maxIndex(abs(channel))
+    delay = maxIdx + 1 - len(legit_noise)
+
+    return np_data[delay + len(legit_noise):]
+
+
 sound_file = wave.open("output.wav", 'r')
 np_data = get_next_data_from_wav(sound_file, 10)
 
@@ -80,14 +90,7 @@ np_data = get_next_data_from_wav(sound_file, 10)
 # dump_file = open('perfectChannelSendData.txt', 'r')
 # np_data = pickle.load(dump_file)
 
-noise_band = np_data[:44100*2]
-channel = np.correlate(noise_band, legit_noise, "full")
-
-(maxIdx, maxVal) = maxIndex(abs(channel))
-delay = maxIdx + 1 - len(legit_noise)
-print maxIdx, maxVal, delay
-
-encoded_signal = np_data[delay + len(legit_noise):]
+encoded_signal = use_white_noise_to_align(np_data)
 data = decode(encoded_signal)
 
 # print data
