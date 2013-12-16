@@ -3,6 +3,7 @@ import pyaudio
 import sys
 import struct
 import numpy as np
+from scipy.io import wavfile
 import matplotlib.pyplot as plt
 import wave
 import pickle
@@ -139,11 +140,11 @@ channel = np.correlate(noise_band, legit_noise, "full")
 delay = maxIdx + 1 - len(legit_noise)
 print maxIdx, maxVal, delay
 
-(fs, song) = wavfile.read('../Let It Go - Frozen - Full.wav')
-print fs
+(fs, song) = wavfile.read('Frozen.wav')
+avsong = np.sum(song, axis=1)/2
 
 encoded_signal = np_data[delay + len(legit_noise):]
-encoded_signal -= song()
+encoded_signal -= avsong[:len(encoded_signal)] # eventually all the convolutions
 data1 = decode(encoded_signal, 1200)
 data2 = decode(encoded_signal, 800)
 print data1[:100] - randomData()

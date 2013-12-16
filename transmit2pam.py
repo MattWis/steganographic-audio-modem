@@ -62,13 +62,11 @@ randData2 = createRandomData(800, seed=2)
 legitNoise = legit_noise()
 
 # Load a song and add that in
-(fs, song) = wavfile.read('Let It Go - Frozen - Full.wav')
+(fs, song) = wavfile.read('Frozen.wav')
 
-# first = np.where(song>100)[0][0]
-# avsong = np.array([[sum(song[first-10:])/2],[sum(song[first-10:])/2]])
-# wavfile.write('../Frozen.wav', avsong, fs)
-
-package = np.append(legitNoise,randData1 + randData2 + song[:len(randData1)])
+avsong = np.sum(song, axis=1)/2
+package = 0.1*np.append(legitNoise,randData1 + randData2)
+package += avsong[:len(package)]
 
 # Package just white noise
 #package = legitNoise
@@ -78,21 +76,21 @@ package = np.append(legitNoise,randData1 + randData2 + song[:len(randData1)])
 
 # Plot data
 x1 = np.linspace(1,len(package), len(package)) 
-plt.plot(x1,package)
+# plt.plot(x1,package)
 plt.show()
 
 # Save to pickle
 dump_file = open('perfectChannelSendData.txt', 'w')
 pickle.dump(package, dump_file)
 
-# # Play data
-# fmt = "%dh" % (len(package))
-# print max(package)
-# print min(package)
-# data = struct.pack(fmt, *list(package))
-# stream.write(data)
+# Play data
+fmt = "%dh" % (len(package))
+print max(package)
+print min(package)
+data = struct.pack(fmt, *list(package))
+stream.write(data)
 
-# stream.stop_stream()
-# stream.close()
+stream.stop_stream()
+stream.close()
 
-# p.terminate()
+p.terminate()

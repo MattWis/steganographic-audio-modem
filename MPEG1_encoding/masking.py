@@ -3,7 +3,9 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from decimal import Decimal
+from scipy.io import wavfile
 import timeit
+import sys
 
 MP1 = CDLL('/home/kevin/ADcomm/steganographic-audio-modem/MPEG1_encoding/PsychoMpegOne.so')
 MP1.PsychoMpegOne.restype = c_long
@@ -16,6 +18,10 @@ MP1.PsychoMpegOne.argtypes = [ \
 	POINTER(c_double), c_long, \
 	POINTER(c_double)
 	]
+
+
+(fs, song) = wavfile.read('../Frozen.wav')
+avsong = np.sum(song, axis=1)/2
 
 spec_out = np.zeros(1024)
 mask_out = np.zeros(1024)
@@ -35,9 +41,18 @@ def make_fake_data():
 	fake_data = fake_data.astype(np.int16)
 	return fake_data
 
+def get_song_data(timestamp):
+	piece = avsong[timestamp:timestamp+1024]
+	piece = piece.astype(np.int16)
+	return piece
+
 def make_test_mask(samples):
 	# Set appropriate variables for the function call
-	short_data  	= samples.ctypes.data_as(POINTER(c_short))
+	samples *= 10
+	print samples
+	short_data = samples.ctypes.data_as(POINTER(c_short))
+	short_test = np.ctypeslib.as_array(short_data, samples.shape)
+	print short_test
 	bufferlen   	= c_long(1024)
 	fs 				= c_long(44100)
 	fft_size		= c_long(1024)
@@ -67,13 +82,15 @@ def make_test_mask(samples):
 	freqs = np.linspace(0, fs.value, 1024)
 	# plt.plot(final_mask, color='g')
 	# plt.plot(final_spec, color='b')
-	# plt.plot(freqs[0:513], final_meff[0:513], color='g')
-	# plt.plot(freqs[0:513], final_spef[0:513], color='b')
-	# plt.show()
+	plt.plot(freqs[0:513], final_meff[0:513], color='g')
+	plt.plot(freqs[0:513], final_spef[0:513], color='b')
+	plt.show()
 	return final_meff[np.arange(1, 512, 32)]
 
 if __name__ == '__main__':
-	samples = make_fake_data()
-	print make_test_mask(samples)
+	# for start in np.arange(0, len(avsong), 1024):
+	samples = get_song_data(44100*4)
+	mask = make_test_mask(samples)
+	print mask	
 
 	# timeit.timeit("make_test_mask(samples)", setup="from __main__ import make_test_mask, samples", number=10)
