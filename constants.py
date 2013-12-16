@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-DATA_RATE = 200.0
+DATA_RATE = 100.0
 PLAY_RATE = 44100.0
 gap = int(PLAY_RATE / DATA_RATE)
 NOISE_SYMBOLS = 88200

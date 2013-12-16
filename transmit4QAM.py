@@ -14,9 +14,9 @@ def legit_noise():
 
 def encoded_legit_noise():
     np.random.seed(0)
-    data = np.sign(np.random.randn(ENCODED_NOISE))
+    data = np.sign(np.random.randn(DATA_SYMBOLS))
     np.random.seed(0)
-    noise = np.random.randn(DATA_SYMBOLS)
+    noise = np.random.randn(ENCODED_NOISE)
     
     return encodeCos(np.append(noise, data)) ##* 5000
 
@@ -31,7 +31,16 @@ def createRandomData():
 
 def encode_data():
     np.random.seed(0)
-    data = np.sign(np.random.randn(500))
+    noise = np.sign(np.random.randn(ENCODED_NOISE))
+    np.random.seed(0)
+    data = np.sign(np.random.randn(DATA_SYMBOLS))
+
+    halfData = int(len(data)/2)
+
+    cosData = encodeCos(data[:halfData])
+    sinData = encodeSin(data[halfData:2*halfData])
+
+    return np.append(encodeCos(noise), sinData + cosData)
 
 def encodeSin(bits):
 
@@ -41,7 +50,7 @@ def encodeSin(bits):
     return (encode(wave, bits)*sine).astype(np.int16)
 
 def encodeCos(bits):
-    
+
     wave = np.zeros(gap * len(bits) + len(pulse()))
  
     cosine = cos(len(wave))
@@ -73,10 +82,9 @@ randData = createRandomData()
 legitNoise = legit_noise()
 encodedNoise = encoded_legit_noise()
 
-# Package
-package = np.append(legitNoise, encodedNoise)
-#package = legitNoise
-#package = randData
+encodedData = encode_data()
+
+package = np.append(legitNoise, encodedData)
 
 # Plot data
 x1 = np.linspace(1,len(package), len(package)) 
