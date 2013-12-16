@@ -5,33 +5,20 @@ import struct
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-
-DATA_RATE = 300.0
-PLAY_RATE = 44100.0
+from constants import *
 
 def legit_noise():
     np.random.seed(0)
-    return np.random.randn(44100*2) * 5000
+    return np.random.randn(NOISE_SYMBOLS) * 5000
     #return np.random.randn(200) ##* 5000
 
 def encoded_legit_noise():
     np.random.seed(0)
-    data = np.sign(np.random.randn(500))
+    data = np.sign(np.random.randn(ENCODED_NOISE))
     np.random.seed(0)
-    noise = np.random.randn(500)
+    noise = np.random.randn(DATA_SYMBOLS)
     
-    return encode(np.append(noise, data)) ##* 5000
-
-def sinc():
-    # Define sinc function
-    width = DATA_RATE
-    x = np.linspace(-width / 2+1, width / 2, width) *  DATA_RATE / PLAY_RATE
-    return np.sinc(x)
-
-def raised_cosine(beta = 0):
-    width = PLAY_RATE / DATA_RATE * 6
-    x = np.linspace(-width / 2 + 1, width / 2, width) * DATA_RATE / PLAY_RATE
-    return np.sinc(x) * np.cos(math.pi * beta * x) / (1 - 4 * beta**2 * x**2)
+    return encodeCos(np.append(noise, data)) ##* 5000
 
 def pulse():
     return raised_cosine(1)
@@ -39,15 +26,28 @@ def pulse():
 def createRandomData():
     np.random.seed(0)
     data = np.sign(np.random.randn(100))
-    return encode(data)
+    
+    return encodeCos(data)
 
-def encode(bits):
+def encode_data():
+    np.random.seed(0)
+    data = np.sign(np.random.randn(500))
 
-    gap = int(PLAY_RATE / DATA_RATE)
+def encodeSin(bits):
+
     wave = np.zeros(gap * len(bits) + len(pulse()))
-    x = np.linspace(1/10000.0,len(wave)/10000.0,len(wave))
+ 
+    sine = sin(len(wave))
+    return (encode(wave, bits)*sine).astype(np.int16)
 
-    cos = np.cos(x*2*math.pi*400)
+def encodeCos(bits):
+    
+    wave = np.zeros(gap * len(bits) + len(pulse()))
+ 
+    cosine = cos(len(wave))
+    return (encode(wave, bits)*cosine).astype(np.int16)
+
+def encode(wave, bits):
 
     for i, bit in enumerate(bits):
         deadtime = np.zeros(gap * i)
@@ -55,8 +55,8 @@ def encode(bits):
         convolved.resize(len(wave))
         wave += convolved   
         
-    unsigned_wave = (wave*cos)*10000
-    return unsigned_wave.astype(np.int16)
+    unsigned_wave = wave*10000
+    return unsigned_wave
 
 p = pyaudio.PyAudio()
 RATE = 44100
