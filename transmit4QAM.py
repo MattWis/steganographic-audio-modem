@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 from constants import *
+import lyrics
 
 def legit_noise():
     np.random.seed(0)
@@ -32,13 +33,14 @@ def encode_data():
     np.random.seed(0)
     noise = np.random.randn(ENCODED_NOISE*2)
     np.random.seed(0)
-    data = np.sign(np.random.randn(DATA_SYMBOLS*2))
+    data = lyrics.data
+    #data = np.sign(np.random.randn(DATA_SYMBOLS*2))
 
     halfData = int(len(data)/2)
     halfNoise = int(len(noise)/2)
 
     cosData = encodeCos(np.append(noise[:halfNoise],data[:halfData]))
-    sinData = encodeSin(np.append(noise[halfData:2*halfData],data[halfData:2*halfData]))
+    sinData = encodeSin(np.append(noise[halfNoise:2*halfNoise],data[halfData:2*halfData]))
 
     return  cosData + sinData
 
@@ -88,7 +90,7 @@ package = np.append(legitNoise, encodedData)
 
 # Plot data
 #x1 = np.linspace(1,len(package), len(package)) 
-#plt.plot(x1,package)
+##plt.plot(x1,package)
 #plt.show()
 
 # Save to pickle

@@ -1,11 +1,11 @@
 import numpy as np
 import math
 
-DATA_RATE = 50.0
+DATA_RATE = 100.0
 PLAY_RATE = 44100.0
 gap = int(PLAY_RATE / DATA_RATE)
 NOISE_SYMBOLS = 88200
-ENCODED_NOISE = 200
+ENCODED_NOISE = 500
 DATA_SYMBOLS = 200
 
 def raised_cosine(beta = 0, width = PLAY_RATE / DATA_RATE * 6):
@@ -22,8 +22,8 @@ def sinc():
 
 def cos(length):
     x = np.linspace(1 / PLAY_RATE, length / PLAY_RATE, length)
-    return np.cos(x * 2 * math.pi * 800)
+    return np.cos(x * 2 * math.pi * 1100)
 
 def sin(length):
     x = np.linspace(1 / PLAY_RATE, length / PLAY_RATE, length)
-    return np.sin(x * 2 * math.pi * 800)
+    return np.sin(x * 2 * math.pi * 1100)
