@@ -23,6 +23,7 @@ def get_string(bits):
     integers = []
     for byte in bytes_:
         integers.append(get_int(byte))
+        # print chr(get_int(byte))
     return ''.join(map(chr, integers))
 
 def get_int(byte):
