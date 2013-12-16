@@ -80,6 +80,15 @@ def use_white_noise_to_align(np_data):
 
     return np_data[delay + len(legit_noise):]
 
+def get_least_squares_filter(noise_band, real_data):
+    discrete_channel = np.correlate(noise_band, legit_noise[:ENCODED_NOISE], "full")
+
+    (maxIdx, maxVal) = maxIndex(abs(discrete_channel))
+    truncated_channel = discrete_channel[maxIdx - 10: maxIdx + 10]
+    q = truncated_channel
+    R = generate_R_matrix(q)
+    desired = np.matrix(d(3 * len(q) - 1)).H
+    return np.array(np.matrix(np.linalg.pinv(R) * desired).flat)
 
 sound_file = wave.open("output.wav", 'r')
 np_data = get_next_data_from_wav(sound_file, 10)
@@ -87,44 +96,13 @@ np_data = get_next_data_from_wav(sound_file, 10)
 # dump_file = open('correlated.txt', 'r')
 # channel = pickle.load(dump_file)
 
-# dump_file = open('perfectChannelSendData.txt', 'r')
-# np_data = pickle.load(dump_file)
-
 encoded_signal = use_white_noise_to_align(np_data)
 data = decode(encoded_signal)
 
-# print data
-# plt.plot(data.real)
-# plt.plot(data.imag)
-# plt.show()
-
 noise_band = data[:ENCODED_NOISE]
-discrete_channel = np.correlate(noise_band, legit_noise[:ENCODED_NOISE], "full")
-# plt.plot(discrete_channel.real)
-# plt.plot(discrete_channel.imag)
-# plt.show()
-
-print data
 real_data = data[ENCODED_NOISE:]
 
-# plt.plot(real_data.real, 'b')
-# plt.plot(real_data.imag, 'k')
-# plt.plot(randomData() * 20000, 'g')
-# plt.show()
-
-(maxIdx, maxVal) = maxIndex(abs(discrete_channel))
-truncated_channel = discrete_channel[maxIdx - 10: maxIdx + 10]
-q = truncated_channel
-R = generate_R_matrix(q)
-d = np.matrix(d(3 * len(q) - 1)).H
-least_squares_filter = np.array(np.matrix(np.linalg.pinv(R) * d).flat)
-
-
-print "LSF"
-# plt.plot(least_squares_filter.real)
-# plt.plot(least_squares_filter.imag)
-# plt.show()
-
+least_squares_filter = get_least_squares_filter(noise_band, real_data)
 equalized_data = np.convolve(least_squares_filter, real_data)
 
 # print equalized_data
