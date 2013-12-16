@@ -17,7 +17,7 @@ NOISE_SYMBOLS = 88200
 ENCODED_NOISE = 500
 DATA_SYMBOLS = 475
 
-lyrics = """My power flurries from the air into the ground
+lyrics = """My power flurries through the air into the ground
 My soul is spiralling in frozen fractals all around
 And one thought crystallizes like an icy blast
 I'm never going back, the past is in the past"""
