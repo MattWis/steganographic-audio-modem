@@ -6,7 +6,7 @@ PLAY_RATE = 44100.0
 gap = int(PLAY_RATE / DATA_RATE)
 NOISE_SYMBOLS = 88200
 ENCODED_NOISE = 500
-DATA_SYMBOLS = 475
+DATA_SYMBOLS = 500
 
 def raised_cosine(beta = 0, width = PLAY_RATE / DATA_RATE * 6):
     x = np.linspace(-width / 2 + 1, width / 2, width) * DATA_RATE / PLAY_RATE
