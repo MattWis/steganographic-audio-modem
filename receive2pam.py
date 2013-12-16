@@ -21,7 +21,7 @@ legit_noise = legit_noise()
 
 def randomData():
     np.random.seed(0)
-    return np.sign(np.random.randn(DATA_SYMBOLS))
+    return np.sign(np.random.randn(DATA_SYMBOLS * 2))
 
 def d(length):
     return np.append(np.array([1]), np.zeros(length - 1)).astype(np.complex_)
@@ -47,7 +47,6 @@ def decode(received):
 def demodulate_noise(noise):
     zero_centered = noise.astype(np.float64)
     demodulated = zero_centered * cos(len(zero_centered))
-    normalized = normalize(demodulated)
     return np.convolve(normalized, receive_filter())
 
 def maxIndex(list):
@@ -72,16 +71,21 @@ def generate_R_matrix(q):
     return np.matrix(scipy.linalg.toeplitz(first_column, first_row))
 
 def use_white_noise_to_align(np_data):
-    noise_band = np_data[:44100*2]
+    noise_band = np_data[:NOISE_SYMBOLS + 44100]
     channel = np.correlate(noise_band, legit_noise, "full")
 
     (maxIdx, maxVal) = maxIndex(abs(channel))
     delay = maxIdx + 1 - len(legit_noise)
+    print "delay: ", delay
 
     return np_data[delay + len(legit_noise):]
 
 def get_least_squares_filter(noise_band, real_data):
-    discrete_channel = np.correlate(noise_band, legit_noise[:ENCODED_NOISE], "full")
+    expected = legit_noise[:ENCODED_NOISE] + (1j) * legit_noise[ENCODED_NOISE:2 * ENCODED_NOISE]
+    discrete_channel = np.correlate(noise_band, expected, "full")
+    plt.plot(discrete_channel.real)
+    plt.plot(discrete_channel.imag)
+    plt.show()
 
     (maxIdx, maxVal) = maxIndex(abs(discrete_channel))
     truncated_channel = discrete_channel[maxIdx - 10: maxIdx + 10]
@@ -91,7 +95,7 @@ def get_least_squares_filter(noise_band, real_data):
     return np.array(np.matrix(np.linalg.pinv(R) * desired).flat)
 
 sound_file = wave.open("output.wav", 'r')
-np_data = get_next_data_from_wav(sound_file, 10)
+np_data = get_next_data_from_wav(sound_file, 15)
 
 # dump_file = open('correlated.txt', 'r')
 # channel = pickle.load(dump_file)
@@ -103,15 +107,20 @@ noise_band = data[:ENCODED_NOISE]
 real_data = data[ENCODED_NOISE:]
 
 least_squares_filter = get_least_squares_filter(noise_band, real_data)
+plt.plot(least_squares_filter.real)
+plt.plot(least_squares_filter.imag)
+plt.show()
 equalized_data = np.convolve(least_squares_filter, real_data)
 
-# print equalized_data
-final_data = np.sign(equalized_data)
+print equalized_data
+cos_data = np.sign(equalized_data)[:DATA_SYMBOLS]
+sin_data = np.sign((-1j) * equalized_data)
+final_data = np.append(cos_data, sin_data)
 # print randomData()
-print final_data[:DATA_SYMBOLS] - randomData()
+print final_data[:DATA_SYMBOLS * 2] - randomData()
 
 for i in range(10):
-    check_data = final_data[i:DATA_SYMBOLS + i]
+    check_data = final_data[i:DATA_SYMBOLS * 2 + i]
     diff = check_data - randomData()
     num_wrong = 0
     for elem in diff:
