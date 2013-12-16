@@ -10,7 +10,6 @@ from constants import *
 def legit_noise():
     np.random.seed(0)
     return np.random.randn(NOISE_SYMBOLS) * 5000
-    #return np.random.randn(200) ##* 5000
 
 def encoded_legit_noise():
     np.random.seed(0)
@@ -18,7 +17,7 @@ def encoded_legit_noise():
     np.random.seed(0)
     noise = np.random.randn(ENCODED_NOISE)
     
-    return encodeCos(np.append(noise, data)) ##* 5000
+    return encodeCos(np.append(noise, data))
 
 def pulse():
     return raised_cosine(1)
@@ -31,16 +30,17 @@ def createRandomData():
 
 def encode_data():
     np.random.seed(0)
-    noise = np.sign(np.random.randn(ENCODED_NOISE))
+    noise = np.random.randn(ENCODED_NOISE*2)
     np.random.seed(0)
-    data = np.sign(np.random.randn(DATA_SYMBOLS))
+    data = np.sign(np.random.randn(DATA_SYMBOLS*2))
 
     halfData = int(len(data)/2)
+    halfNoise = int(len(noise)/2)
 
-    cosData = encodeCos(data[:halfData])
-    sinData = encodeSin(data[halfData:2*halfData])
+    cosData = encodeCos(np.append(noise[:halfNoise],data[:halfData]))
+    sinData = encodeSin(np.append(noise[halfData:2*halfData],data[halfData:2*halfData]))
 
-    return np.append(encodeCos(noise), sinData + cosData)
+    return  cosData + sinData
 
 def encodeSin(bits):
 
@@ -87,19 +87,20 @@ encodedData = encode_data()
 package = np.append(legitNoise, encodedData)
 
 # Plot data
-x1 = np.linspace(1,len(package), len(package)) 
-plt.plot(x1,package)
-plt.show()
+#x1 = np.linspace(1,len(package), len(package)) 
+#plt.plot(x1,package)
+#plt.show()
 
 # Save to pickle
 #dump_file = open('perfectChannelSendData.txt', 'w')
 #pickle.dump(package, dump_file)
 
+fmt = "%dh" % (len(package))
+data = struct.pack(fmt, *list(package))
+
 raw_input("Press enter to start playing data")
 
 # Play data
-fmt = "%dh" % (len(package))
-data = struct.pack(fmt, *list(package))
 stream.write(data)
 
 stream.stop_stream()
