@@ -32,7 +32,7 @@ def encode(bits, freq):
 
     gap = int(PLAY_RATE / DATA_RATE)
     wave = np.zeros(gap * len(bits) + len(pulse()))
-    x = np.linspace(1/10000.0,len(wave)/10000.0,len(wave))
+    x = np.linspace(1/DATA_RATE,len(wave)/DATA_RATE,len(wave))
 
     cos = np.cos(x*2*math.pi*freq)
 
